@@ -376,25 +376,17 @@
       }
 
       async function downloadLauncher() {
-  try {
-    const res = await fetch("/f/version.json");
-    if (!res.ok) throw new Error("Version fetch failed");
-    const data = await res.json();
-    const version = data.version || "unknown";
-    const exeUrl = `/f/sol-launcher-${version}.exe`;
-
-    // Create hidden link with download attribute
-    const link = document.createElement("a");
-    link.href = exeUrl;
-    link.download = `sol-launcher-${version}.exe`;  // forces save dialog
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (err) {
-    alert("Download failed: " + err.message);
-  }
-}
+        try {
+          if (!currentVersion) {
+            const res = await fetch("/f/version.json");
+            const data = await res.json();
+            currentVersion = data.version;
+          }
+          window.location.href = `/f/sol-launcher-${currentVersion}.exe`;
+        } catch (e) {
+          console.error("Download failed:", e);
+        }
+      }
 
       init();
     </script>
