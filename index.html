@@ -345,50 +345,76 @@
       </div>
     </div>
     <script>
-      let currentVersion = null;
+  let currentVersion = null;
 
-      async function init() {
-        try {
-          const res = await fetch("/f/version.json");
-          const data = await res.json();
-          currentVersion = data.version || null;
+  async function init() {
+    try {
+      const res = await fetch("/f/version.json");
+      const data = await res.json();
+      currentVersion = data.version || null;
 
-          const label = document.getElementById("dl-label");
-          const btn = document.getElementById("dl-btn");
-          const badge = document.getElementById("version-badge");
+      const label = document.getElementById("dl-label");
+      const btn = document.getElementById("dl-btn");
+      const badge = document.getElementById("version-badge");
 
-          if (currentVersion) {
-            label.textContent = "download for windows";
-            btn.disabled = false;
-            badge.innerHTML = `windows 10 / 11 &nbsp;·&nbsp; x64 &nbsp;·&nbsp; v${currentVersion} &nbsp;·&nbsp; free`;
-          } else {
-            label.textContent = "download for windows";
-            btn.disabled = false;
-            badge.innerHTML =
-              "windows 10 / 11 &nbsp;·&nbsp; x64 &nbsp;·&nbsp; free";
-          }
-        } catch (e) {
-          const label = document.getElementById("dl-label");
-          const btn = document.getElementById("dl-btn");
-          label.textContent = "download for windows";
-          btn.disabled = false;
-        }
+      if (currentVersion) {
+        label.textContent = "download for windows";
+        btn.disabled = false;
+        badge.innerHTML = `windows 10 / 11 &nbsp;·&nbsp; x64 &nbsp;·&nbsp; v${currentVersion} &nbsp;·&nbsp; free`;
+      } else {
+        label.textContent = "download for windows";
+        btn.disabled = false;
+      }
+    } catch (e) {
+      const label = document.getElementById("dl-label");
+      const btn = document.getElementById("dl-btn");
+      label.textContent = "download for windows";
+      btn.disabled = false;
+    }
+  }
+
+  async function downloadLauncher() {
+    const btn = document.getElementById("dl-btn");
+    const label = document.getElementById("dl-label");
+
+    try {
+      if (!currentVersion) {
+        const res = await fetch("/f/version.json");
+        const data = await res.json();
+        currentVersion = data.version;
       }
 
-      async function downloadLauncher() {
-        try {
-          if (!currentVersion) {
-            const res = await fetch("/f/version.json");
-            const data = await res.json();
-            currentVersion = data.version;
-          }
-          window.location.href = `/f/sol-launcher-${currentVersion}.exe`;
-        } catch (e) {
-          console.error("Download failed:", e);
-        }
-      }
+      btn.disabled = true;
+      label.textContent = "downloading...";
 
-      init();
-    </script>
+      const url = `/f/sol-launcher-${currentVersion}.exe`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `sol-launcher-${currentVersion}.exe`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Revoke after a short delay to let the download start
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
+      label.textContent = "download for windows";
+      btn.disabled = false;
+    } catch (e) {
+      console.error("Download failed:", e);
+      label.textContent = "download for windows";
+      btn.disabled = false;
+    }
+  }
+
+  init();
+</script>
   </body>
 </html>
