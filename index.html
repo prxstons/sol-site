@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sol launcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #0a0a0a;
+        --bg-dark: #080808;
+        --border: rgba(255, 255, 255, 0.05);
+        --text: #ffffff;
+        --muted: rgba(255, 255, 255, 0.45);
+        --tiny: rgba(255, 255, 255, 0.18);
+        --green: #2ecc71;
+        --font: "Inter", "Helvetica Neue", sans-serif;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      .shell {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .titlebar {
+        height: 36px;
+        background: var(--bg-dark);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px;
+        flex-shrink: 0;
+        user-select: none;
+      }
+      .tb-label {
+        font-size: 11px;
+        color: var(--tiny);
+        letter-spacing: 0.08em;
+      }
+      .tb-controls {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+      }
+      .ctrl {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        transition: background 0.15s ease;
+      }
+      .ctrl:hover {
+        background: var(--muted);
+      }
+
+      .body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 700px;
+        height: 500px;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(255, 255, 255, 0.028) 0%,
+          transparent 65%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .section-label {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--tiny);
+        margin-bottom: 20px;
+      }
+
+      .title {
+        font-size: clamp(44px, 6.5vw, 76px);
+        font-weight: 300;
+        letter-spacing: -0.03em;
+        line-height: 1.06;
+        color: var(--text);
+        margin-bottom: 64px;
+      }
+
+      .btn-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(255, 255, 255, 0.88);
+        color: #000;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-family: var(--font);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          background 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .btn-primary:hover {
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+      .btn-primary:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .btn-default {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 7px 12px;
+        border-radius: 6px;
+        font-family: var(--font);
+        font-size: 11px;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          background 0.15s ease,
+          color 0.15s ease;
+      }
+      .btn-default:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .meta {
+        font-size: 10px;
+        color: var(--tiny);
+        letter-spacing: 0.06em;
+      }
+
+      #version-badge {
+        font-size: 10px;
+        color: var(--tiny);
+        letter-spacing: 0.06em;
+        transition: color 0.2s;
+      }
+
+      .bottombar {
+        height: 28px;
+        background: var(--bg-dark);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        flex-shrink: 0;
+        user-select: none;
+      }
+      .bb-left {
+        font-size: 10px;
+        color: var(--tiny);
+        letter-spacing: 0.04em;
+      }
+      .bb-right {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .bb-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+      .bb-right span {
+        font-size: 10px;
+        color: var(--tiny);
+        letter-spacing: 0.04em;
+      }
+
+      .f {
+        opacity: 0;
+        animation: fu 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .d1 {
+        animation-delay: 0.04s;
+      }
+      .d2 {
+        animation-delay: 0.1s;
+      }
+      .d3 {
+        animation-delay: 0.16s;
+      }
+      .d4 {
+        animation-delay: 0.22s;
+      }
+      .d5 {
+        animation-delay: 0.28s;
+      }
+
+      @keyframes fu {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="titlebar">
+        <span class="tb-label">sol launcher</span>
+        <div class="tb-controls">
+          <div class="ctrl"></div>
+          <div class="ctrl"></div>
+          <div class="ctrl"></div>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="glow"></div>
+
+        <div class="content">
+          <p class="section-label f d1">sol launcher</p>
+          <h1 class="title f d2">your games.<br />nothing else.</h1>
+
+          <div class="btn-row f d4">
+            <button
+              id="dl-btn"
+              class="btn-primary"
+              onclick="downloadLauncher()"
+              disabled
+            >
+              <svg
+                width="12"
+                height="12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span id="dl-label">loading...</span>
+            </button>
+
+            <a
+              href="https://discord.gg/qpsf7wzXHW"
+              target="_blank"
+              class="btn-default"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 127.14 96.36"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"
+                />
+              </svg>
+              discord
+            </a>
+          </div>
+
+          <span class="meta f d5" id="version-badge"
+            >windows 10 / 11 &nbsp;·&nbsp; x64 &nbsp;·&nbsp; free</span
+          >
+        </div>
+      </div>
+
+      <div class="bottombar">
+        <span class="bb-left">sol launcher</span>
+        <div class="bb-right">
+          <div class="bb-dot"></div>
+          <span>connected</span>
+        </div>
+      </div>
+    </div>
+    <script>
+      let currentVersion = null;
+
+      async function init() {
+        try {
+          const res = await fetch("/f/version.json");
+          const data = await res.json();
+          currentVersion = data.version || null;
+
+          const label = document.getElementById("dl-label");
+          const btn = document.getElementById("dl-btn");
+          const badge = document.getElementById("version-badge");
+
+          if (currentVersion) {
+            label.textContent = "download for windows";
+            btn.disabled = false;
+            badge.innerHTML = `windows 10 / 11 &nbsp;·&nbsp; x64 &nbsp;·&nbsp; v${currentVersion} &nbsp;·&nbsp; free`;
+          } else {
+            label.textContent = "download for windows";
+            btn.disabled = false;
+            badge.innerHTML =
+              "windows 10 / 11 &nbsp;·&nbsp; x64 &nbsp;·&nbsp; free";
+          }
+        } catch (e) {
+          const label = document.getElementById("dl-label");
+          const btn = document.getElementById("dl-btn");
+          label.textContent = "download for windows";
+          btn.disabled = false;
+        }
+      }
+
+      async function downloadLauncher() {
+        try {
+          if (!currentVersion) {
+            const res = await fetch("/f/version.json");
+            const data = await res.json();
+            currentVersion = data.version;
+          }
+          window.location.href = `/f/sol-launcher-${currentVersion}.exe`;
+        } catch (e) {
+          console.error("Download failed:", e);
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>
